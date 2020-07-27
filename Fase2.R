@@ -115,7 +115,7 @@ utilidadpormeslaboral = utilidadpordialaboral * 20
 utilidadpormeslaboral
 utilidadporaniolaboral = utilidadpormeslaboral * 12
 utilidadporaniolaboral
-res <- c(veces, TiempoLlegada, TiempoFinal, tiempomax, utilidadporhoralaboral, utilidadpordialaboral, utilidadporsemanalaboral, utilidadpormeslaboral, utilidadporaniolaboral)
+res <- c("veces"=veces, "tiempoBase"=round(TiempoFinal, digits = 2), "tiempoMaximo"=round(tiempomax, digits = 2), "utilidad"=utilidadporhoralaboral)
 return(res)
 ##Recordar que 1 d?a tiene 8 horas laborales, 1 semana tiene 5 d?as laborales y 1 mes tiene 20 d?as laborales.
 }
