@@ -3,16 +3,16 @@ library(markovchain)
 library(Matrix)
 
 grass_1<-function(lambda, miu, alpha, ingresos, costos, nombre, t, color){
-  #Matriz de tasas de transici?n Q
+  #Matriz de tasas de transición Q
   estadosS=c(0:24) #{0, 1, 2, 3, ..., 24}
   piCero <- c(0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) #??(0)
   piCero <- c(rep(0,8),1,rep(0,16))
-  #inicializar la matriz de probabilidades de transici?n en cero
+  #inicializar la matriz de probabilidades de transición en cero
   Q=matrix(0,nrow = 25,ncol= 25)
   dimnames(Q)<-list(estadosS,estadosS)
-  #Se recorren las filas y columnas de la matriz para llenarla de acuerdo a la formulaci?n general 
+  #Se recorren las filas y columnas de la matriz para llenarla de acuerdo a la formulación general 
   
-  #llenar la matriz utilizando la formulaci?n general
+  #llenar la matriz utilizando la formulación general
   for (i in estadosS) 
   {
     for (j in estadosS) 
@@ -45,14 +45,14 @@ grass_1<-function(lambda, miu, alpha, ingresos, costos, nombre, t, color){
   #Exponencial de la matriz Qt
   library(expm)
   
-  #Estimaci?n del valor esperado y la varianza en 2 meses (8 semanas)
+  #Estimación del valor esperado y la varianza en 2 meses (8 semanas)
   pi8 <- piCero%*%expm(Q*8)
   esp8 <- sum(pi8*estadosS)
   espplantas8 = esp8 * 250
   var8 <- (sum(pi8*(esp8-estadosS)^2))/25
   varplantas8 = var8 * 250
 
-  #An?lisis transitorio a las t semanas
+  #Análisis transitorio a las t semanas
   vectorEsperado <- rep(0, times= t)
   tiempo <- seq(from=1, to = t, by = 1 )
   for (i in (1:t)) 
@@ -65,9 +65,9 @@ grass_1<-function(lambda, miu, alpha, ingresos, costos, nombre, t, color){
     vectorEsperado[i] = lotesEsperados 
   }
   vectorEsperado = vectorEsperado *250
-  plot(tiempo,vectorEsperado,type = "b",col=color, main = nombre, ylab = "N?mero promedio de plantas sanas", xlab = "Tiempo (semanas)")
+  plot(tiempo,vectorEsperado,type = "b",col=color, main = nombre, ylab = "Número promedio de plantas sanas", xlab = "Tiempo (semanas)")
   
-  #An?lisis en el largo plazo, es decir, alcanzado el estado estable en el tiempo.
+  #Análisis en el largo plazo, es decir, alcanzado el estado estable en el tiempo.
   piES <- steadyStates(CMTC)
   espES <- sum(piES*estadosS)
   espplantasES = espES * 250

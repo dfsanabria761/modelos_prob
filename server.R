@@ -8,13 +8,51 @@
 #
 
 library(shiny)
+library(rriskDistributions)
+install.packages("readxl")
+library(readxl)
 library(plotly)
 library(ggplot2)
+source("Fase1.R")
 
 source("Fase2.R")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+        output$plantasSembradas <- renderPlot({
+            miu = 0.5
+            alpha = (1/26)
+            
+            inFile <- input$file1
+            if(!is.null(inFile)){
+                #Ingresos (COP/semana) por planta sembrada
+                ingresosIn = input$ingresosInv
+                ingresosCa = input$ingresosCA
+                nsemanas  = 52
+                seleccion = as(input$select, "numeric")
+                class(seleccion)
+                #Costos (COP/semana) por mantenimiento de una hectarea
+                costosIn = input$costosInv * 1000000
+                costosCa = input$costosCA * 1000000
+                if(seleccion %% 2 == 0) {
+                    ingresos = ingresosIn
+                    costos = costosIn
+                } else{
+                    ingresos = ingresosCa
+                    costos = costosCa
+                }
+                datos <- read_excel(inFile$datapath, sheet = seleccion+2)
+                tPlantaciones = datos$`Semanas entre siembras`
+                fitDist <- fit.cont(tPlantaciones)
+                lambda <- fitDist$fittedParams
+                grass_1(lambda, miu, alpha, nombre = "Plantaciones", ingresos =  ingresosCa, costos = costosCa, t = 52, color = "dark green" )
+                
+            }
+        })
+    
+    
+    
+    
     veces <- reactive({
         grass(tiemposRT = input$tiempo1,tiempoSAL =  input$tiempoSAL,tiempoSO =  input$tiempoSO,tiempoAS =  input$tiempoAS)["veces"]
     })
@@ -32,8 +70,8 @@ shinyServer(function(input, output) {
     })
     
     output$veces <- renderValueBox({
-        valueBox(paste0(veces(), " Dias a la semana"), 
-                 "Que no se ocupa al maximo el camion", icon = icon("fas fa-cannabis"), color = "olive")
+        valueBox(paste0(veces(), " Días a la semana"), 
+                 "Que no se ocupa al máximo el camion", icon = icon("fas fa-cannabis"), color = "olive")
     })
     
     output$tiempo <- renderValueBox({
@@ -42,29 +80,8 @@ shinyServer(function(input, output) {
     })
     
     output$tiempoMax <- renderValueBox({
-        valueBox(paste0(if(tiempoMaximo()> 100 | tiempoMaximo()<0){"Infinitos"}else {tiempoMaximo()}, " Anios laborales"), 
-                 "Que tarda el centro de acopio en llegar a maxima capacidad", icon = icon("fas fa-cannabis"), color = "olive")
-    })
-    
-    output$sensibilidadRT <- renderPlotly({
-        data <- data.frame("Utilidad" = c("Original", "Alterada"), "Valor" = c(grass(0.153,6.213,2.556,0.124)["utilidad"], grass(input$tiempo1,6.213,2.556,0.124)["utilidad"]))
-        ggplot(data = data, aes(x=Utilidad, y = Valor)) +
-            geom_bar(stat="identity", color="green", fill="lightgreen")
-    })
-    output$sensibilidadSAL <- renderPlotly({
-        data <- data.frame("Utilidad" = c("Original", "Alterada"), "Valor" = c(grass(0.153,6.213,2.556,0.124)["utilidad"], grass(0.153,input$tiempoSAL,2.556,0.124)["utilidad"]))
-        ggplot(data = data, aes(x=Utilidad, y = Valor)) +
-            geom_bar(stat="identity", color="green", fill="darkgreen")
-    })
-    output$sensibilidadSO <- renderPlotly({
-        data <- data.frame("Utilidad" = c("Original", "Alterada"), "Valor" = c(grass(0.153,6.213,2.556,0.124)["utilidad"], grass(0.153,6.213,input$tiempoSO,0.124)["utilidad"]))
-        ggplot(data = data, aes(x=Utilidad, y = Valor)) +
-            geom_bar(stat="identity", color="green", fill="lightgreen")
-    })
-    output$sensibilidadAS <- renderPlotly({
-        data <- data.frame("Utilidad" = c("Original", "Alterada"), "Valor" = c(grass(0.153,6.213,2.556,0.124)["utilidad"], grass(0.153,6.213,2.556,input$tiempoAS)["utilidad"]))
-        ggplot(data = data, aes(x=Utilidad, y = Valor)) +
-            geom_bar(stat="identity", color="green", fill="darkgreen")
+        valueBox(paste0(if(tiempoMaximo()> 100 | tiempoMaximo()<0){"Infinitos"}else {tiempoMaximo()}, " Años laborales"), 
+                 "Que tarda el centro de acopio en llegar a máxima capacidad", icon = icon("fas fa-cannabis"), color = "olive")
     })
     
     output$sensibilidadGeneral <- renderPlotly({
