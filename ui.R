@@ -8,8 +8,8 @@
 #
 
 library(shinydashboard)
-#install.packages("shinyWidgets")
-#install.packages("plotly")
+install.packages("shinyWidgets")
+install.packages("plotly")
 library("shinyWidgets")
 library(plotly)
 library(ggplot2)
@@ -231,34 +231,47 @@ dashboardPage(
             ),
             tabItem("politicaOptima",
                     fluidRow(
-                        valueBoxOutput("cosecha"),
                         valueBoxOutput("politica")
                     ),
                     column(5,
                            fluidRow(
-                               selectInput("precipitaciones", h3("Seleccione Clasificación"), 
-                                           choices = list("Lluvia con granizo de gran tamaño" = 351, 
-                                                          "Lluvia torrencial y granizo" = 300,
-                                                          "Lluvia torrencial" = 175,
-                                                          "Lluvia muy fuerte" = 70, 
-                                                          "Lluvia fuerte" = 28,
-                                                          "Lluvia Moderada" = 11.25,
-                                                          "Lluvia Ligera" = 4, 
-                                                          "Lluvia débil" = 1.88,
-                                                          "Lluvia muy débil" = 0.7,
-                                                          "Nada o traza de precipitación" = 0.2), selected = 1)
+                               knobInput(
+                                   inputId = "dia",
+                                   label = "Día: ",
+                                   value = 0,
+                                   min = 0,
+                                   max = 60,
+                                   step = 1,
+                                   displayPrevious = TRUE,
+                                   lineCap = "round",
+                                   fgColor = "#90BE6D",
+                                   inputColor = "#90BE6D"
+                               )
                            ),
                            fluidRow(
-                               selectInput("precipitaciones", h3("Seleccione Estado del cultivo"), 
-                                           choices = list("Estado 1" = 1, 
+                               selectInput("estadoCultivo", h3("Seleccione Estado del cultivo"),
+                                           choices = list("Estado 1" = 1,
                                                           "Estado 2" = 2,
                                                           "Estado 3" = 3,
-                                                          "Estado 4" = 4, 
+                                                          "Estado 4" = 4,
                                                           "Estado 5" = 5), selected = 1)
+                           ),
+                           fluidRow(
+                               selectInput("precipitaciones", h3("Seleccione Precipitación"), 
+                                           choices = list("Lluvia con granizo de gran tamaño" = 1, 
+                                                          "Lluvia Torrencial y Granizo" = 2,
+                                                          "Lluvia Torrencial" = 3,
+                                                          "Lluvia Muy Fuerte" = 4, 
+                                                          "Lluvia Fuerte" = 5,
+                                                          "Lluvia Moderada" = 6,
+                                                          "Lluvia Ligera" = 7, 
+                                                          "Lluvia Débil" = 8,
+                                                          "Lluvia Muy Débil" = 9,
+                                                          "Nada o traza de precipitación" = 10), selected = 1)
                            )
                     ),
                     column(7,
-                           plotOutput("mapaCalor")
+                           imageOutput("mapaCalor")
                     )
             )
         )    

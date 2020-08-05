@@ -9,49 +9,68 @@
 
 library(shiny)
 library(rriskDistributions)
-install.packages("readxl")
+#install.packages("readxl")
 library(readxl)
 library(plotly)
 library(ggplot2)
 source("Fase1.R")
-
 source("Fase2.R")
+source("Fase 3.R")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-        output$plantasSembradas <- renderPlot({
-            miu = 0.5
-            alpha = (1/26)
-            
-            inFile <- input$file1
-            if(!is.null(inFile)){
-                #Ingresos (COP/semana) por planta sembrada
-                ingresosIn = input$ingresosInv
-                ingresosCa = input$ingresosCA
-                nsemanas  = 52
-                seleccion = as(input$select, "numeric")
-                class(seleccion)
-                #Costos (COP/semana) por mantenimiento de una hectarea
-                costosIn = input$costosInv * 1000000
-                costosCa = input$costosCA * 1000000
-                if(seleccion %% 2 == 0) {
-                    ingresos = ingresosIn
-                    costos = costosIn
-                } else{
-                    ingresos = ingresosCa
-                    costos = costosCa
-                }
-                datos <- read_excel(inFile$datapath, sheet = seleccion+2)
-                tPlantaciones = datos$`Semanas entre siembras`
-                fitDist <- fit.cont(tPlantaciones)
-                lambda <- fitDist$fittedParams
-                grass_1(lambda, miu, alpha, nombre = "Plantaciones", ingresos =  ingresosCa, costos = costosCa, t = 52, color = "dark green" )
-                
+    output$plantasSembradas <- renderPlot({
+        miu = 0.5
+        alpha = (1/26)
+        
+        inFile <- input$file1
+        if(!is.null(inFile)){
+            #Ingresos (COP/semana) por planta sembrada
+            ingresosIn = input$ingresosInv
+            ingresosCa = input$ingresosCA
+            nsemanas  = 52
+            seleccion = as(input$select, "numeric")
+            class(seleccion)
+            #Costos (COP/semana) por mantenimiento de una hectarea
+            costosIn = input$costosInv * 1000000
+            costosCa = input$costosCA * 1000000
+            if(seleccion %% 2 == 0) {
+                ingresos = ingresosIn
+                costos = costosIn
+            } else{
+                ingresos = ingresosCa
+                costos = costosCa
             }
-        })
+            datos <- read_excel(inFile$datapath, sheet = seleccion+2)
+            tPlantaciones = datos$`Semanas entre siembras`
+            fitDist <- fit.cont(tPlantaciones)
+            lambda <- fitDist$fittedParams
+            
+            if(input$switch){
+                return(
+                    grass_1(lambda, miu, alpha, nombre = "Plantaciones", ingresos =  ingresosCa, costos = costosCa, t = 52, color = "dark green" )
+                )
+            }else{
+                return(
+                    grass_2(lambda, miu, alpha, nombre = "Plantaciones", ingresos =  ingresosCa, costos = costosCa, t = 52, color = "dark green" )
+                )
+            }
+            
+        }
+    })
     
+    output$mapaCalor <- renderImage({
+        return(list(
+            src = "heatmap.jpg",
+            filetype = "image/jpeg",
+            alt = "This is a heatmap"
+        ))
+    }, deleteFile = FALSE)
     
-    
+    output$politica <- renderValueBox({
+        valueBox(paste0(if(input$precipitaciones == 7 && input$estadoCultivo == 2){"No hacer nada"}else {"Abonar"}), 
+                 paste0("La política óptima para el día: ", input$dia), icon = icon("fas fa-cannabis"), color = "olive", width = 12)
+    })
     
     veces <- reactive({
         grass(tiemposRT = input$tiempo1,tiempoSAL =  input$tiempoSAL,tiempoSO =  input$tiempoSO,tiempoAS =  input$tiempoAS)["veces"]
